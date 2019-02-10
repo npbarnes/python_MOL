@@ -17,9 +17,9 @@ class Independent_ODEs:
     q_init = np.array([1.0,1.0])
     A = np.array([[2.,0.],[0.,1.]])
 
-    @staticmethod
-    def exact(t):
-        return q_init*np.exp(np.diag(A)*t)
+    @classmethod
+    def exact(cls, t):
+        return cls.q_init*np.exp(np.diag(cls.A)*t)
 
 def make_TestCase(ODE, algorithm, final):
     class ODE_TestCase(ODE, unittest.TestCase):
@@ -35,7 +35,7 @@ def make_TestCase(ODE, algorithm, final):
             self.assertAlmostEqual(self.stepper.q, self.exact(self.stepper.t), places=2)
         
 
-    return One_Step
+    return ODE_TestCase
 
 class test_linear_forward_euler_simple(make_TestCase(Simple_ODE, linear_forward_euler, 10.2*Simple_ODE.dt_init)):
     pass
