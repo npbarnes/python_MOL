@@ -1,4 +1,4 @@
-import unittest
+import pytest
 import math
 import numpy as np
 from time_steppers import linear_forward_euler
@@ -22,25 +22,21 @@ class Independent_ODEs:
         return cls.q_init*np.exp(np.diag(cls.A)*t)
 
 def make_TestCase(ODE, algorithm, final):
-    class ODE_TestCase(ODE, unittest.TestCase):
+    class ODE_TestCase(ODE):
         final_t = final
-        def setUp(self):
+        def setup_class(self):
             self.stepper = algorithm(0, self.dt_init, self.q_init, self.A)
             self.stepper.stepUntil(final)
     
         def test_t(self):
-            self.assertAlmostEqual(self.stepper.t, self.final_t)
+            assert np.isclose(self.stepper.t, self.final_t)
 
         def test_q(self):
-            self.assertAlmostEqual(self.stepper.q, self.exact(self.stepper.t), places=2)
+            assert np.allclose(self.stepper.q, self.exact(self.stepper.t))
         
 
     return ODE_TestCase
 
-class test_linear_forward_euler_simple(make_TestCase(Simple_ODE, linear_forward_euler, 10.2*Simple_ODE.dt_init)):
+class Test_linear_forward_euler_simple(make_TestCase(Simple_ODE, linear_forward_euler, 10.2*Simple_ODE.dt_init)):
     pass
 
-
-
-if __name__ == '__main__':
-    unittest.main()
