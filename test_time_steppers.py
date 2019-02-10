@@ -40,3 +40,5 @@ def make_TestCase(ODE, algorithm, final):
 class Test_linear_forward_euler_simple(make_TestCase(Simple_ODE, linear_forward_euler, 10.2*Simple_ODE.dt_init)):
     pass
 
+class Test_linear_forward_euler_independent(make_TestCase(Independent_ODEs, linear_forward_euler, 10.2*Independent_ODEs.dt_init)):
+    pass
