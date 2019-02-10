@@ -1,6 +1,7 @@
 import pytest
 import math
 import numpy as np
+from parameterized import parameterized_class
 from time_steppers import linear_forward_euler
 
 class Simple_ODE:
@@ -21,24 +22,20 @@ class Independent_ODEs:
     def exact(cls, t):
         return cls.q_init*np.exp(np.diag(cls.A)*t)
 
-def make_TestCase(ODE, algorithm, final):
-    class ODE_TestCase(ODE):
-        final_t = final
-        def setup_class(self):
-            self.stepper = algorithm(0, self.dt_init, self.q_init, self.A)
-            self.stepper.stepUntil(final)
-    
-        def test_t(self):
-            assert np.isclose(self.stepper.t, self.final_t)
+@parameterized_class(('ODE', 'algorithm', 'num_timesteps',), [
+    (Simple_ODE, linear_forward_euler, 1),
+    (Simple_ODE, linear_forward_euler, 10.2),
+    (Independent_ODEs, linear_forward_euler, 1),
+    (Independent_ODEs, linear_forward_euler, 10.2)
+])
+class Test_ODE:#pylint: disable=no-member
+    def setup_class(self):
+        self.final_t = self.num_timesteps*self.ODE.dt_init
+        self.stepper = self.algorithm(0, self.ODE.dt_init, self.ODE.q_init, self.ODE.A)
+        self.stepper.stepUntil(self.final_t)
 
-        def test_q(self):
-            assert np.allclose(self.stepper.q, self.exact(self.stepper.t))
-        
+    def test_t(self):
+        assert np.isclose(self.stepper.t, self.final_t)
 
-    return ODE_TestCase
-
-class Test_linear_forward_euler_simple(make_TestCase(Simple_ODE, linear_forward_euler, 10.2*Simple_ODE.dt_init)):
-    pass
-
-class Test_linear_forward_euler_independent(make_TestCase(Independent_ODEs, linear_forward_euler, 10.2*Independent_ODEs.dt_init)):
-    pass
+    def test_q(self):
+        assert np.allclose(self.stepper.q, self.ODE.exact(self.stepper.t))
