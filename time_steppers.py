@@ -74,3 +74,10 @@ class linear_backward_euler(linear_time_stepper):
     def _step(self):
         self.q = np.linalg.solve(self.I - self.dt*self.A, self.q)
 
+class linear_trapezoid(linear_time_stepper):
+    def setup(self, A):
+        self.A = A
+        self.I = np.eye(self.dim)
+
+    def _step(self):
+        self.q = np.linalg.solve(self.I - 0.5*self.dt*self.A, self.q + 0.5*self.dt*self.A.dot(self.q))

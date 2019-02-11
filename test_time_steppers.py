@@ -2,7 +2,7 @@ import pytest
 import math
 import numpy as np
 from parameterized import parameterized_class
-from time_steppers import linear_forward_euler, linear_backward_euler
+from time_steppers import linear_forward_euler, linear_backward_euler, linear_trapezoid
 
 class Simple_ODE:
     dt_init = 0.0001
@@ -38,7 +38,7 @@ class Dependent_ODEs:
         ])
 
 ODEs = [Simple_ODE, Independent_ODEs, Dependent_ODEs]
-algorithms = [linear_forward_euler, linear_backward_euler]
+algorithms = [linear_forward_euler, linear_backward_euler, linear_trapezoid]
 
 @parameterized_class(('TestName', 'ODE', 'algorithm', 'num_timesteps',), [
     (ODE.__name__ + '_' + alg.__name__ + '_' + str(steps).replace('.', '_'),
