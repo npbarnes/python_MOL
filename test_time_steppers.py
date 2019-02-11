@@ -2,7 +2,7 @@ import pytest
 import math
 import numpy as np
 from parameterized import parameterized_class
-from time_steppers import linear_forward_euler
+from time_steppers import linear_forward_euler, linear_backward_euler
 
 class Simple_ODE:
     dt_init = 0.0001
@@ -22,11 +22,14 @@ class Independent_ODEs:
     def exact(cls, t):
         return cls.q_init*np.exp(np.diag(cls.A)*t)
 
-@parameterized_class(('ODE', 'algorithm', 'num_timesteps',), [
-    (Simple_ODE, linear_forward_euler, 1),
-    (Simple_ODE, linear_forward_euler, 10.2),
-    (Independent_ODEs, linear_forward_euler, 1),
-    (Independent_ODEs, linear_forward_euler, 10.2)
+ODEs = [Simple_ODE, Independent_ODEs]
+algorithms = [linear_forward_euler, linear_backward_euler]
+
+@parameterized_class(('TestName', 'ODE', 'algorithm', 'num_timesteps',), [
+    (ODE.__name__ + '_' + alg.__name__ + '_' + str(steps).replace('.', '_'),
+    ODE, alg, steps) for ODE in ODEs
+                      for alg in algorithms
+                      for steps in [1,10.2]
 ])
 class Test_ODE:#pylint: disable=no-member
     def setup_class(self):
