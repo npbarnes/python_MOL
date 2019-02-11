@@ -19,13 +19,13 @@ class time_stepper:
         """
         self.t = t0
         self.dt = dt
-        self.q0 = np.asarray(q0)
+        if isinstance(q0, np.ndarray):
+            self.q0 = q0
+        else:
+            self.q0 = np.array([q0])
 
-        self.q = np.copy(q0)
-        try:
-            self.dim = len(self.q)
-        except TypeError:
-            self.dim = 1
+        self.q = np.copy(self.q0)
+        self.dim = self.q.shape[0]
 
         self.setup(*args, **kwargs)
 
@@ -69,7 +69,6 @@ class linear_forward_euler(linear_time_stepper):
 class lienar_backward_euler_save_inv(linear_time_stepper):
     def setup(self, A):
         """Warning: this won't work right if dt changes"""
-        super().__init__(A)
         self.inv = np.linalg.inv(np.eye(self.dim) - self.dt*self.A)
 
     def _step(self):
@@ -78,7 +77,6 @@ class lienar_backward_euler_save_inv(linear_time_stepper):
 class linear_backward_euler_saved_matrix(linear_time_stepper):
     def setup(self, A):
         """Warning: this won't work right if dt changes"""
-        super().__init__(A)
         self.I_dtA = np.eye(self.dim) - self.dt*self.A
 
     def _step(self):
@@ -86,7 +84,7 @@ class linear_backward_euler_saved_matrix(linear_time_stepper):
 
 class linear_backward_euler(linear_time_stepper):
     def setup(self, A):
-        super().__init__(A)
+        self.A = A
         self.I = np.eye(self.dim)
     
     def _step(self):
