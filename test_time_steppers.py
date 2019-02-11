@@ -22,7 +22,22 @@ class Independent_ODEs:
     def exact(cls, t):
         return cls.q_init*np.exp(np.diag(cls.A)*t)
 
-ODEs = [Simple_ODE, Independent_ODEs]
+class Dependent_ODEs:
+    dt_init = 0.0001
+    q_init = np.array([1.0,1.0])
+    A = np.array([[0.,2.],[1.,0.]])
+
+    @staticmethod
+    def exact(t):
+        exp = math.exp
+        r2 = math.sqrt(2)
+        r22 = 2*math.sqrt(2)
+        return np.array([
+            0.5*exp(-r2*t)*(exp(r22*t)+1) + (exp(-r2*t)*(exp(r22*t)-1))/r2,
+            (exp(-r2*t)*(exp(r22*t)-1))/r22 + 0.5*exp(-r2*t)*(exp(r22*t)+1)
+        ])
+
+ODEs = [Simple_ODE, Independent_ODEs, Dependent_ODEs]
 algorithms = [linear_forward_euler, linear_backward_euler]
 
 @parameterized_class(('TestName', 'ODE', 'algorithm', 'num_timesteps',), [
