@@ -66,22 +66,6 @@ class linear_forward_euler(linear_time_stepper):
     def _step(self):
         self.q = self.q + self.dt*self.A.dot(self.q)
 
-class lienar_backward_euler_save_inv(linear_time_stepper):
-    def setup(self, A):
-        """Warning: this won't work right if dt changes"""
-        self.inv = np.linalg.inv(np.eye(self.dim) - self.dt*self.A)
-
-    def _step(self):
-        self.q = self.inv.dot(self.q)
-
-class linear_backward_euler_saved_matrix(linear_time_stepper):
-    def setup(self, A):
-        """Warning: this won't work right if dt changes"""
-        self.I_dtA = np.eye(self.dim) - self.dt*self.A
-
-    def _step(self):
-        self.q = np.linalg.solve(self.I_dtA, self.q)
-
 class linear_backward_euler(linear_time_stepper):
     def setup(self, A):
         self.A = A
@@ -89,3 +73,4 @@ class linear_backward_euler(linear_time_stepper):
     
     def _step(self):
         self.q = np.linalg.solve(self.I - self.dt*self.A, self.q)
+
