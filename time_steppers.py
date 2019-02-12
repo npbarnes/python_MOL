@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import math
 import numpy as np
+import scipy.sparse as sp
+from scipy.sparse.linalg import spsolve
 
 class time_stepper:
     """This is the abstract superclass for classes that solve
@@ -66,18 +68,23 @@ class linear_forward_euler(linear_time_stepper):
     def _step(self):
         self.q = self.q + self.dt*self.A.dot(self.q)
 
-class linear_backward_euler(linear_time_stepper):
+class implicit_linear_time_stepper(time_stepper):
     def setup(self, A):
         self.A = A
-        self.I = np.eye(self.dim)
-    
-    def _step(self):
-        self.q = np.linalg.solve(self.I - self.dt*self.A, self.q)
+        # We designate a solver based on weather A is sparse or not.
+        # We also construct an identity matrix since having one is handy for
+        # many implicit algorithms.
+        if sp.issparse(self.A):
+            self.I = sp.identity(self.dim)
+            self.solve = spsolve
+        else:
+            self.I = np.eye(self.dim)
+            self.solve = np.linalg.solve
 
-class linear_trapezoid(linear_time_stepper):
-    def setup(self, A):
-        self.A = A
-        self.I = np.eye(self.dim)
-
+class linear_backward_euler(implicit_linear_time_stepper):
     def _step(self):
-        self.q = np.linalg.solve(self.I - 0.5*self.dt*self.A, self.q + 0.5*self.dt*self.A.dot(self.q))
+        self.q = self.solve(self.I - self.dt*self.A, self.q)
+
+class linear_trapezoid(implicit_linear_time_stepper):
+    def _step(self):
+        self.q = self.solve(self.I - 0.5*self.dt*self.A, self.q + 0.5*self.dt*self.A.dot(self.q))
