@@ -1,6 +1,7 @@
 import pytest
 import math
 import numpy as np
+import scipy.sparse as sp
 from parameterized import parameterized_class
 from time_steppers import linear_forward_euler, linear_backward_euler, linear_trapezoid
 
@@ -20,7 +21,10 @@ class Independent_ODEs:
 
     @classmethod
     def exact(cls, t):
-        return cls.q_init*np.exp(np.diag(cls.A)*t)
+        A = cls.A
+        if sp.issparse(A):
+            A = A.toarray()
+        return cls.q_init*np.exp(np.diag(A)*t)
 
 class Dependent_ODEs:
     dt_init = 0.0001
@@ -37,7 +41,14 @@ class Dependent_ODEs:
             (exp(-r2*t)*(exp(r22*t)-1))/r22 + 0.5*exp(-r2*t)*(exp(r22*t)+1)
         ])
 
+def make_sparse(ODE):
+    class Sparse_ODE(ODE):
+        A = sp.csr_matrix(ODE.A)
+    Sparse_ODE.__name__ = 'Sparse_' + ODE.__name__
+    return Sparse_ODE
+
 ODEs = [Simple_ODE, Independent_ODEs, Dependent_ODEs]
+ODEs += [make_sparse(ODE) for ODE in ODEs]
 algorithms = [linear_forward_euler, linear_backward_euler, linear_trapezoid]
 
 @parameterized_class(('TestName', 'ODE', 'algorithm', 'num_timesteps',), [
