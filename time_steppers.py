@@ -6,8 +6,8 @@ from scipy.sparse.linalg import spsolve
 
 class time_stepper:
     """This is the abstract superclass for classes that solve
-    dq/dt = A q
-    for vector q and matrix A
+    dq/dt = F(t,q)
+    for vector q and function F
     Specific solvers must provide a step function and possibly a setup function.
     It's possible to use this class for a method of lines PDE solver.
     """
@@ -46,7 +46,7 @@ class time_stepper:
     def stepBy(self, time):
         if time < 0:
             raise ValueError('Must step forward in time')
-        
+
         tmp_dt = self.dt
         numsteps = math.ceil(time/self.dt)
         self.dt = time/numsteps
@@ -60,15 +60,28 @@ class time_stepper:
         delta = time - self.t
         self.stepBy(delta)
 
-class linear_time_stepper(time_stepper):
+class quasilinear_time_stepper(time_stepper):
+    @property
+    def A(self):
+        return self._A
+
+    @A.setter
+    def A(self, A):
+        if callable(A):
+            self._A = A
+        self._A = lambda *ignore: A
+
     def setup(self, A):
         self.A = A
 
-class linear_forward_euler(linear_time_stepper):
+class quasilinear_forward_euler(quasilinear_time_stepper):
+    """The matrix A may be a function of time and state"""
     def _step(self):
-        self.q = self.q + self.dt*self.A.dot(self.q)
+        self.q = self.q + self.dt*self.A(self.t, self.q).dot(self.q)
 
-class implicit_linear_time_stepper(time_stepper):
+class implicit_quasilinear_time_stepper(quasilinear_time_stepper):
+    """The matrix A may be a function of time, but not state since that could require
+    a nonlinear solver."""
     def setup(self, A):
         self.A = A
         # We designate a solver based on weather A is sparse or not.
@@ -81,10 +94,10 @@ class implicit_linear_time_stepper(time_stepper):
             self.I = np.eye(self.dim) # noqa: E741
             self.solve = np.linalg.solve
 
-class linear_backward_euler(implicit_linear_time_stepper):
+class quasilinear_backward_euler(implicit_quasilinear_time_stepper):
     def _step(self):
-        self.q = self.solve(self.I - self.dt*self.A, self.q)
+        self.q = self.solve(self.I - self.dt*self.A(self.t+self.dt), self.q)
 
-class linear_trapezoid(implicit_linear_time_stepper):
+class quasilinear_trapezoid(implicit_quasilinear_time_stepper):
     def _step(self):
-        self.q = self.solve(self.I - 0.5*self.dt*self.A, self.q + 0.5*self.dt*self.A.dot(self.q))
+        self.q = self.solve(self.I - 0.5*self.dt*self.A(self.t+self.dt), self.q + 0.5*self.dt*self.A(self.t).dot(self.q))

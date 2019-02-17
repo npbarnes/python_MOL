@@ -2,7 +2,7 @@ import math
 import numpy as np
 import scipy.sparse as sp
 from parameterized import parameterized_class
-from time_steppers import linear_forward_euler, linear_backward_euler, linear_trapezoid
+from time_steppers import quasilinear_forward_euler, quasilinear_backward_euler, quasilinear_trapezoid
 
 class Simple_ODE:
     dt_init = 0.0001
@@ -48,13 +48,11 @@ def make_sparse(ODE):
 
 ODEs = [Simple_ODE, Independent_ODEs, Dependent_ODEs]
 ODEs += [make_sparse(ODE) for ODE in ODEs]
-algorithms = [linear_forward_euler, linear_backward_euler, linear_trapezoid]
+algorithms = [quasilinear_forward_euler, quasilinear_backward_euler, quasilinear_trapezoid]
 
 @parameterized_class(('TestName', 'ODE', 'algorithm', 'num_timesteps',), [
     (ODE.__name__ + '_' + alg.__name__ + '_' + str(steps).replace('.', '_'),
-    ODE, alg, steps) for ODE in ODEs
-                      for alg in algorithms
-                      for steps in [1,10.2]
+        ODE, alg, steps) for ODE in ODEs for alg in algorithms for steps in [1,10.2]
 ])
 class Test_ODE:
     def setup_class(self):
