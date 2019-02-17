@@ -75,10 +75,10 @@ class implicit_linear_time_stepper(time_stepper):
         # We also construct an identity matrix since having one is handy for
         # many implicit algorithms.
         if sp.issparse(self.A):
-            self.I = sp.identity(self.dim)
+            self.I = sp.identity(self.dim) # noqa: E741
             self.solve = spsolve
         else:
-            self.I = np.eye(self.dim)
+            self.I = np.eye(self.dim) # noqa: E741
             self.solve = np.linalg.solve
 
 class linear_backward_euler(implicit_linear_time_stepper):

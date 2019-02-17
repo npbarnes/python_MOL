@@ -56,7 +56,7 @@ algorithms = [linear_forward_euler, linear_backward_euler, linear_trapezoid]
                       for alg in algorithms
                       for steps in [1,10.2]
 ])
-class Test_ODE:#pylint: disable=no-member
+class Test_ODE:
     def setup_class(self):
         self.final_t = self.num_timesteps*self.ODE.dt_init
         self.stepper = self.algorithm(0, self.ODE.dt_init, self.ODE.q_init, self.ODE.A)
