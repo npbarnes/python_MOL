@@ -52,7 +52,9 @@ algorithms = [quasilinear_forward_euler, quasilinear_backward_euler, quasilinear
 
 @parameterized_class(('TestName', 'ODE', 'algorithm', 'num_timesteps',), [
     (ODE.__name__ + '_' + alg.__name__ + '_' + str(steps).replace('.', '_'),
-        ODE, alg, steps) for ODE in ODEs for alg in algorithms for steps in [1,10.2]
+        ODE, alg, steps) for ODE in ODEs # noqa: E131
+                         for alg in algorithms
+                         for steps in [1,10.2]
 ])
 class Test_ODE:
     def setup_class(self):
