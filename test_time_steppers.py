@@ -5,7 +5,7 @@ from parameterized import parameterized_class
 from time_steppers import quasilinear_forward_euler, quasilinear_backward_euler, quasilinear_trapezoid
 
 class Simple_ODE:
-    dt_init = 0.0001
+    dt_init = 0.001
     q_init = 1.0
     A = np.asarray(1)
 
@@ -14,7 +14,7 @@ class Simple_ODE:
         return math.exp(t)
 
 class Independent_ODEs:
-    dt_init = 0.0001
+    dt_init = 0.001
     q_init = np.array([1.0,1.0])
     A = np.array([[2.,0.],[0.,1.]])
 
@@ -26,7 +26,7 @@ class Independent_ODEs:
         return cls.q_init*np.exp(np.diag(A)*t)
 
 class Dependent_ODEs:
-    dt_init = 0.0001
+    dt_init = 0.001
     q_init = np.array([1.0,1.0])
     A = np.array([[0.,2.],[1.,0.]])
 
@@ -66,4 +66,4 @@ class Test_ODE:
         assert np.isclose(self.stepper.t, self.final_t)
 
     def test_q(self):
-        assert np.allclose(self.stepper.q, self.ODE.exact(self.stepper.t))
+        assert np.allclose(self.stepper.q, self.ODE.exact(self.stepper.t), rtol=1e-3, atol=1e-5)
