@@ -55,7 +55,9 @@ def make_sparse(ODE):
 
 ODEs = [Simple_ODE, Independent_ODEs, Dependent_ODEs]
 ODEs += [make_sparse(ODE) for ODE in ODEs]
-algorithms = [quasilinear_forward_euler, quasilinear_backward_euler, quasilinear_trapezoid]
+explicit_algorithms = [quasilinear_forward_euler]
+implicit_algorithms = [quasilinear_backward_euler, quasilinear_trapezoid]
+algorithms = explicit_algorithms + implicit_algorithms
 expected_convergences = [1, 1, 2]
 
 @parameterized_class(('TestName', 'ODE', 'algorithm', 'num_timesteps',), [
@@ -98,3 +100,14 @@ def test_convergence(ODE, alg, expected_rate):
 
     # Typically only expected to be correct to within a few digits
     assert np.isclose(p, expected_rate, rtol=1e-3, atol=1e-5)
+
+@parameterized.expand([
+    (ODE, alg) for ODE in ODEs # noqa: E131
+                     for alg in implicit_algorithms
+], testcase_func_name=custom_testname_func)
+def test_sparsity_detection(ODE, alg):
+    """Implicit algorithms will detect whether or not A is sparse
+    and build an identity matrix that matches. This may fail.
+    """
+    stepper = alg(0, ODE.dt_init, ODE.q_init, ODE.A)
+    assert ODE.__name__.startswith('Sparse') == sp.issparse(stepper.I)

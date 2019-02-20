@@ -87,7 +87,7 @@ class implicit_quasilinear_time_stepper(quasilinear_time_stepper):
         # We designate a solver based on weather A is sparse or not.
         # We also construct an identity matrix since having one is handy for
         # many implicit algorithms.
-        if sp.issparse(self.A):
+        if sp.issparse(self.A(0)):
             self.I = sp.identity(self.dim) # noqa: E741
             self.solve = spsolve
         else:
