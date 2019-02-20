@@ -56,14 +56,17 @@ algorithms = [quasilinear_forward_euler, quasilinear_backward_euler, quasilinear
                          for alg in algorithms
                          for steps in [1,10.2]
 ])
-class Test_ODE:
+class Test_Solution:
+    """Tests whether we are getting close to the right answer or not"""
     def setup_class(self):
         self.final_t = self.num_timesteps*self.ODE.dt_init
         self.stepper = self.algorithm(0, self.ODE.dt_init, self.ODE.q_init, self.ODE.A)
         self.stepper.stepUntil(self.final_t)
 
     def test_t(self):
+        """Expected to be close to fairly high accuracy"""
         assert np.isclose(self.stepper.t, self.final_t)
 
     def test_q(self):
+        """Expected to be close, but only within a few digits"""
         assert np.allclose(self.stepper.q, self.ODE.exact(self.stepper.t), rtol=1e-3, atol=1e-5)
