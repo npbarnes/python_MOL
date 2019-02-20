@@ -1,8 +1,15 @@
 import math
 import numpy as np
 import scipy.sparse as sp
-from parameterized import parameterized_class
+from parameterized import parameterized_class, parameterized
 from time_steppers import quasilinear_forward_euler, quasilinear_backward_euler, quasilinear_trapezoid
+
+def custom_testname_func(func, num, params):
+    """Generates a reasonable testname for parameterized function tests"""
+    return "%s_%s_%s" % (
+        func.__name__, int(num),
+        parameterized.to_safe_name('_'.join((params.args[0].__name__, params.args[1].__name__)))
+    )
 
 class Simple_ODE:
     dt_init = 0.001
@@ -49,6 +56,7 @@ def make_sparse(ODE):
 ODEs = [Simple_ODE, Independent_ODEs, Dependent_ODEs]
 ODEs += [make_sparse(ODE) for ODE in ODEs]
 algorithms = [quasilinear_forward_euler, quasilinear_backward_euler, quasilinear_trapezoid]
+expected_convergences = [1, 1, 2]
 
 @parameterized_class(('TestName', 'ODE', 'algorithm', 'num_timesteps',), [
     (ODE.__name__ + '_' + alg.__name__ + '_' + str(steps).replace('.', '_'),
@@ -70,3 +78,23 @@ class Test_Solution:
     def test_q(self):
         """Expected to be close, but only within a few digits"""
         assert np.allclose(self.stepper.q, self.ODE.exact(self.stepper.t), rtol=1e-3, atol=1e-5)
+
+@parameterized.expand([
+    (ODE, alg, rate) for ODE in ODEs # noqa: E131
+                     for alg,rate in zip(algorithms, expected_convergences)
+], testcase_func_name=custom_testname_func)
+def test_convergence(ODE, alg, expected_rate):
+    """Tests whether the rate of convergence is close enough to what's expected"""
+    final_t = 5*ODE.dt_init
+    dts = [ODE.dt_init/2**i for i in range(4)]
+    steppers = [alg(0, dt, ODE.q_init, ODE.A) for dt in dts]
+
+    for s in steppers:
+        s.stepUntil(final_t)
+
+    errs = [np.linalg.norm(s.q - ODE.exact(s.t), ord=np.inf) for s in steppers]
+
+    p, logM = np.polyfit(np.log10(dts), np.log10(errs), 1)
+
+    # Typically only expected to be correct to within a few digits
+    assert np.isclose(p, expected_rate, rtol=1e-3, atol=1e-5)
