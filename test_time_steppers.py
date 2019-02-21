@@ -47,6 +47,11 @@ class Dependent_ODEs:
             (exp(-r2*t)*(exp(r22*t)-1))/r22 + 0.5*exp(-r2*t)*(exp(r22*t)+1)
         ])
 
+class Callable_A(Dependent_ODEs):
+    @staticmethod
+    def A(*ignore):
+        return Dependent_ODEs.A
+
 def make_sparse(ODE):
     class Sparse_ODE(ODE):
         A = sp.csr_matrix(ODE.A)
@@ -55,6 +60,7 @@ def make_sparse(ODE):
 
 ODEs = [Simple_ODE, Independent_ODEs, Dependent_ODEs]
 ODEs += [make_sparse(ODE) for ODE in ODEs]
+ODEs.append(Callable_A)
 explicit_algorithms = [quasilinear_forward_euler]
 implicit_algorithms = [quasilinear_backward_euler, quasilinear_trapezoid]
 algorithms = explicit_algorithms + implicit_algorithms

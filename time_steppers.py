@@ -73,7 +73,8 @@ class quasilinear_time_stepper(time_stepper):
     def A(self, A):
         if callable(A):
             self._A = A
-        self._A = lambda *ignore: A
+        else:
+            self._A = lambda *ignore: A
 
     def setup(self, A):
         self.A = A
