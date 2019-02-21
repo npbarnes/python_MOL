@@ -5,7 +5,7 @@ import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
 
 class time_stepper:
-    """This is the abstract superclass for classes that solve
+    """This is the base class for classes that solve equations in the form
     dq/dt = F(t,q)
     for vector q and function F
     Specific solvers must provide a step function and possibly a setup function.
@@ -61,6 +61,10 @@ class time_stepper:
         self.stepBy(delta)
 
 class quasilinear_time_stepper(time_stepper):
+    """A base class for quasilinear systems. I.e. systems where
+    F(t,q) = A(t,q) q
+    for some matrix valued function A. It also supports A being a constant matrix.
+    """
     @property
     def A(self):
         return self._A
