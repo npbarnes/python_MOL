@@ -111,8 +111,9 @@ def test_convergence(ODE, alg, expected_rate):
 
     p, logM = np.polyfit(np.log10(dts), np.log10(errs), 1)
 
-    # Typically only expected to be correct to within a few digits
-    assert np.isclose(p, expected_rate, rtol=1e-3, atol=1e-5)
+    # This does not need to be especially close. Being within a digit or two
+    # is enough to demonstrate convergence.
+    assert np.isclose(p, expected_rate, rtol=1e-2, atol=0)
 
 @parameterized.expand([
     (ODE, alg) for ODE in ODEs # noqa: E131
