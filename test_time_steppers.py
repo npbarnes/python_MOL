@@ -20,7 +20,7 @@ class Simple_ODE:
     def exact(t):
         return math.exp(t)
 
-class Simple_Callable_A:
+class Simple_t_Dependent_ODE:
     dt_init = 0.001
     q_init = 1.0
 
@@ -67,7 +67,7 @@ def make_sparse(ODE):
 
 ODEs = [Simple_ODE, Independent_ODEs, Dependent_ODEs]
 ODEs += [make_sparse(ODE) for ODE in ODEs]
-ODEs.append(Simple_Callable_A)
+ODEs.append(Simple_t_Dependent_ODE)
 explicit_algorithms = [quasilinear_forward_euler]
 implicit_algorithms = [quasilinear_backward_euler, quasilinear_trapezoid]
 algorithms = explicit_algorithms + implicit_algorithms
