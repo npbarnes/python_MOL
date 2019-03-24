@@ -4,7 +4,7 @@ import scipy.sparse as sp
 from parameterized import parameterized_class, parameterized
 from time_steppers import quasilinear_forward_euler, quasilinear_backward_euler, quasilinear_trapezoid
 
-def custom_testname_func(func, num, params):
+def name_func(func, num, params):
     """Generates a reasonable testname for parameterized function tests"""
     return "%s_%s_%s" % (
         func.__name__, int(num),
@@ -97,7 +97,7 @@ class Test_Solution:
 @parameterized.expand([
     (ODE, alg, rate) for ODE in ODEs # noqa: E131
                      for alg,rate in zip(algorithms, expected_convergences)
-], testcase_func_name=custom_testname_func)
+], name_func=name_func)
 def test_convergence(ODE, alg, expected_rate):
     """Tests whether the rate of convergence is close enough to what's expected"""
     final_t = 5*ODE.dt_init
@@ -118,7 +118,7 @@ def test_convergence(ODE, alg, expected_rate):
 @parameterized.expand([
     (ODE, alg) for ODE in ODEs # noqa: E131
                      for alg in implicit_algorithms
-], testcase_func_name=custom_testname_func)
+], name_func=name_func)
 def test_sparsity_detection(ODE, alg):
     """Implicit algorithms will detect whether or not A is sparse
     and build an identity matrix that matches. This may fail.
